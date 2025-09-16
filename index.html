@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetSuite PO Fulfillment Template Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+        
+        .header {
+            background: white;
+            padding: 24px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 8px;
+            margin-left: 40px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 48px;
+        }
+        
+        .instructions-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .instructions-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .instructions-list {
+            list-style: none;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .instructions-list li {
+            padding-left: 24px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .instructions-list li:before {
+            content: "•";
+            position: absolute;
+            left: 8px;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .upload-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .upload-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .upload-card .description {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: #fafbfc;
+        }
+        
+        .drop-zone:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+        }
+        
+        .drop-zone.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .drop-zone.has-file {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .drop-zone-content {
+            pointer-events: none;
+        }
+        
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            opacity: 0.4;
+        }
+        
+        .drop-zone-text {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .drop-zone-subtext {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-info {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .file-info-name {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-info-size {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        .process-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .process-button {
+            width: 100%;
+            padding: 14px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .process-button:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .process-button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 24px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .stat-card .label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .stat-card.success {
+            border-left: 4px solid #10b981;
+        }
+        
+        .stat-card.warning {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .stat-card.info {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .stat-card.error {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .preview-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        
+        .tab:hover {
+            color: #3b82f6;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .data-table th {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #2c3e50;
+        }
+        
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .download-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .download-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .download-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .download-card .description {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        
+        .badge {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge.success {
+            background: #10b981;
+        }
+        
+        .badge.warning {
+            background: #f59e0b;
+        }
+        
+        .download-button {
+            width: 100%;
+            padding: 12px 20px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .download-button:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .download-button.warning {
+            background: #f59e0b;
+        }
+        
+        .download-button.warning:hover:not(:disabled) {
+            background: #d97706;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .download-button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        
+        .error-alert {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        
+        .error-alert.show {
+            display: block;
+        }
+        
+        .error-alert-content {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+        
+        .error-alert-icon {
+            color: #ef4444;
+            flex-shrink: 0;
+        }
+        
+        .error-alert-message {
+            color: #991b1b;
+            font-size: 14px;
+        }
+        
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        @media (max-width: 768px) {
+            .upload-section,
+            .download-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>
+                <span>📦</span>
+                NetSuite PO Fulfillment Template Generator
+            </h1>
+            <div class="subtitle">Generate fulfillment templates for Amazon shipments without ASN numbers</div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Instructions Card -->
+        <div class="instructions-card">
+            <h2>
+                <span>📋</span>
+                Instructions
+            </h2>
+            <ul class="instructions-list">
+                <li>Upload your Shipments CSV file (contains PO numbers, ASN status, and shipping locations)</li>
+                <li>Upload your Pending WF file (Excel XML or CSV format with Document Numbers and External IDs)</li>
+                <li>Click "Process Files" to match POs without ASN numbers to their corresponding SO numbers</li>
+                <li>The tool will automatically separate orders by location (Encore vs UNIS)</li>
+                <li>Download separate fulfillment templates ready for NetSuite upload</li>
+            </ul>
+        </div>
+        
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-card">
+                <h3>
+                    <span>📄</span>
+                    Shipments File
+                </h3>
+                <p class="description">CSV file with PO numbers and shipment details</p>
+                <div class="drop-zone" id="shipmentsDropZone">
+                    <input type="file" id="shipmentsFile" class="file-input" accept=".csv">
+                    <div class="drop-zone-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 10L12 5L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 5V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20 13V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="drop-zone-text">Drop your CSV file here or click to browse</div>
+                        <div class="drop-zone-subtext">Supports: shipments-last-30-days.csv</div>
+                    </div>
+                    <div class="file-info" id="shipmentsInfo">
+                        <div class="file-info-name">
+                            <span>✅</span>
+                            <span id="shipmentsFileName"></span>
+                        </div>
+                        <div class="file-info-size" id="shipmentsFileSize"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="upload-card">
+                <h3>
+                    <span>📊</span>
+                    Pending WF File
+                </h3>
+                <p class="description">Excel XML or CSV file with SO Document Numbers</p>
+                <div class="drop-zone" id="pendingDropZone">
+                    <input type="file" id="pendingFile" class="file-input" accept=".xls,.xlsx,.xml,.csv">
+                    <div class="drop-zone-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 10L12 5L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 5V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20 13V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="drop-zone-text">Drop your Excel/CSV file here or click to browse</div>
+                        <div class="drop-zone-subtext">Supports: PendingWF*.xls, *.csv</div>
+                    </div>
+                    <div class="file-info" id="pendingInfo">
+                        <div class="file-info-name">
+                            <span>✅</span>
+                            <span id="pendingFileName"></span>
+                        </div>
+                        <div class="file-info-size" id="pendingFileSize"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Process Section -->
+        <div class="process-section">
+            <button class="process-button" id="processButton" disabled>
+                <span>⚙️</span>
+                Process Files
+            </button>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div style="color: #64748b; font-size: 14px;">Processing your files...</div>
+            </div>
+        </div>
+        
+        <!-- Error Alert -->
+        <div class="error-alert" id="errorAlert">
+            <div class="error-alert-content">
+                <span class="error-alert-icon">⚠️</span>
+                <div class="error-alert-message" id="errorMessage"></div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card info">
+                    <div class="label">Total POs Found</div>
+                    <div class="value" id="totalPOs">0</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="label">POs Without ASN</div>
+                    <div class="value" id="posWithoutASN">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="label">Matched SOs</div>
+                    <div class="value" id="matchedSOs">0</div>
+                </div>
+                <div class="stat-card error">
+                    <div class="label">Unmatched POs</div>
+                    <div class="value" id="unmatchedPOs">0</div>
+                </div>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <div class="tabs">
+                    <button class="tab active" data-tab="matched">Matched Orders</button>
+                    <button class="tab" data-tab="unmatched">Unmatched POs</button>
+                    <button class="tab" data-tab="remaining">Remaining Amazon Orders</button>
+                </div>
+                
+                <div class="tab-content active" id="matchedTab">
+                    <div id="matchedContainer"></div>
+                </div>
+                
+                <div class="tab-content" id="unmatchedTab">
+                    <div id="unmatchedContainer"></div>
+                </div>
+                
+                <div class="tab-content" id="remainingTab">
+                    <div id="remainingContainer"></div>
+                </div>
+            </div>
+            
+            <!-- Download Section -->
+            <div class="download-section">
+                <div class="download-card">
+                    <h3>
+                        Encore Fulfillment
+                        <span class="badge success" id="encoreBadge">0 orders</span>
+                    </h3>
+                    <p class="description">Template for shipments from Encore facility</p>
+                    <button class="download-button" id="downloadEncore" disabled>
+                        <span>⬇️</span>
+                        Download Encore Template
+                    </button>
+                </div>
+                
+                <div class="download-card">
+                    <h3>
+                        UNIS Fulfillment
+                        <span class="badge success" id="unisBadge">0 orders</span>
+                    </h3>
+                    <p class="description">Template for shipments from UNIS facility</p>
+                    <button class="download-button" id="downloadUnis" disabled>
+                        <span>⬇️</span>
+                        Download UNIS Template
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Remaining Orders Section -->
+            <div class="download-section" style="margin-top: 24px;">
+                <div class="download-card" style="grid-column: 1 / -1;">
+                    <h3>
+                        Remaining Amazon/AVC Orders
+                        <span class="badge warning" id="remainingBadge">0 orders</span>
+                    </h3>
+                    <p class="description">All pending Amazon/AVC orders not included in Encore or UNIS templates (sorted by date, oldest first)</p>
+                    <button class="download-button" id="downloadRemaining" disabled style="background: #f59e0b;">
+                        <span>📊</span>
+                        Download Remaining Amazon Orders
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let shipmentsData = null;
+        let pendingData = null;
+        let pendingHeaders = null;
+        let encoreOrders = [];
+        let unisOrders = [];
+        let unmatchedPOsList = [];
+        let matchedSONumbers = new Set();
+        let remainingOrders = [];
+        
+        // Initialize drag and drop
+        function initializeDragDrop() {
+            const dropZones = [
+                { zone: document.getElementById('shipmentsDropZone'), input: document.getElementById('shipmentsFile') },
+                { zone: document.getElementById('pendingDropZone'), input: document.getElementById('pendingFile') }
+            ];
+            
+            dropZones.forEach(({ zone, input }) => {
+                // Click to upload
+                zone.addEventListener('click', () => input.click());
+                
+                // Drag and drop events
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('active');
+                });
+                
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('active');
+                });
+                
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('active');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        input.files = files;
+                        const event = new Event('change', { bubbles: true });
+                        input.dispatchEvent(event);
+                    }
+                });
+            });
+        }
+        
+        // File upload handlers
+        document.getElementById('shipmentsFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const dropZone = document.getElementById('shipmentsDropZone');
+                dropZone.classList.add('has-file');
+                dropZone.querySelector('.drop-zone-content').style.display = 'none';
+                
+                const info = document.getElementById('shipmentsInfo');
+                document.getElementById('shipmentsFileName').textContent = file.name;
+                document.getElementById('shipmentsFileSize').textContent = `${(file.size / 1024).toFixed(2)} KB`;
+                info.classList.add('show');
+                
+                checkReadyToProcess();
+            }
+        });
+        
+        document.getElementById('pendingFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const dropZone = document.getElementById('pendingDropZone');
+                dropZone.classList.add('has-file');
+                dropZone.querySelector('.drop-zone-content').style.display = 'none';
+                
+                const info = document.getElementById('pendingInfo');
+                document.getElementById('pendingFileName').textContent = file.name;
+                document.getElementById('pendingFileSize').textContent = `${(file.size / 1024).toFixed(2)} KB`;
+                info.classList.add('show');
+                
+                checkReadyToProcess();
+            }
+        });
+        
+        function checkReadyToProcess() {
+            const shipmentsFile = document.getElementById('shipmentsFile').files[0];
+            const pendingFile = document.getElementById('pendingFile').files[0];
+            document.getElementById('processButton').disabled = !(shipmentsFile && pendingFile);
+        }
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update active content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabName + 'Tab').classList.add('active');
+            });
+        });
+        
+        // Process button handler
+        document.getElementById('processButton').addEventListener('click', async function() {
+            const shipmentsFile = document.getElementById('shipmentsFile').files[0];
+            const pendingFile = document.getElementById('pendingFile').files[0];
+            
+            if (!shipmentsFile || !pendingFile) {
+                showError('Please select both files before processing.');
+                return;
+            }
+            
+            showLoading(true);
+            hideError();
+            hideResults();
+            
+            try {
+                // Read shipments CSV
+                shipmentsData = await readCSV(shipmentsFile);
+                
+                // Read pending WF file
+                pendingData = await readPendingFile(pendingFile);
+                
+                // Process the data
+                processData();
+                
+                // Show results
+                showResults();
+            } catch (error) {
+                showError('Error processing files: ' + error.message);
+                console.error(error);
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function readCSV(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split(/\r?\n/);
+                        const headers = parseCSVLine(lines[0]);
+                        const data = [];
+                        
+                        for (let i = 1; i < lines.length; i++) {
+                            if (lines[i].trim()) {
+                                const values = parseCSVLine(lines[i]);
+                                const row = {};
+                                headers.forEach((header, index) => {
+                                    row[header.replace(/^\ufeff/, '')] = values[index] || '';
+                                });
+                                data.push(row);
+                            }
+                        }
+                        
+                        resolve(data);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else if (char !== '\r') {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
+        }
+        
+        function readPendingFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        let data = [];
+                        
+                        // Check if it's XML or CSV based on content
+                        if (text.trim().startsWith('<?xml') || text.includes('<Workbook')) {
+                            // Handle XML Excel format
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(text, "text/xml");
+                            
+                            // Find the worksheet
+                            const rows = xmlDoc.getElementsByTagName('Row');
+                            let headers = [];
+                            
+                            for (let i = 0; i < rows.length; i++) {
+                                const cells = rows[i].getElementsByTagName('Cell');
+                                const rowData = [];
+                                
+                                let cellIndex = 0;
+                                for (let j = 0; j < cells.length; j++) {
+                                    const cell = cells[j];
+                                    const indexAttr = cell.getAttribute('ss:Index');
+                                    if (indexAttr) {
+                                        cellIndex = parseInt(indexAttr) - 1;
+                                    }
+                                    
+                                    while (rowData.length < cellIndex) {
+                                        rowData.push('');
+                                    }
+                                    
+                                    const dataElement = cell.getElementsByTagName('Data')[0];
+                                    const value = dataElement ? dataElement.textContent : '';
+                                    rowData[cellIndex] = value;
+                                    cellIndex++;
+                                }
+                                
+                                if (i === 0) {
+                                    headers = rowData;
+                                    pendingHeaders = headers; // Store headers globally
+                                } else if (rowData.some(v => v)) {
+                                    const row = {};
+                                    headers.forEach((header, index) => {
+                                        row[header] = rowData[index] || '';
+                                    });
+                                    data.push(row);
+                                }
+                            }
+                        } else {
+                            // Handle CSV format
+                            const lines = text.split(/\r?\n/);
+                            const headers = parseCSVLine(lines[0]);
+                            pendingHeaders = headers; // Store headers globally
+                            
+                            for (let i = 1; i < lines.length; i++) {
+                                if (lines[i].trim()) {
+                                    const values = parseCSVLine(lines[i]);
+                                    const row = {};
+                                    headers.forEach((header, index) => {
+                                        row[header.replace(/^\ufeff/, '')] = values[index] || '';
+                                    });
+                                    data.push(row);
+                                }
+                            }
+                        }
+                        
+                        resolve(data);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+        
+        function processData() {
+            encoreOrders = [];
+            unisOrders = [];
+            unmatchedPOsList = [];
+            matchedSONumbers = new Set();
+            remainingOrders = [];
+            
+            // Find PO column (could be "POs", "Purchase orders", or contain "purchase")
+            const poColumn = Object.keys(shipmentsData[0] || {}).find(col => {
+                const lower = col.toLowerCase();
+                return lower === 'pos' || lower === 'purchase orders' || lower.includes('purchase') || lower.includes('po');
+            });
+            
+            if (!poColumn) {
+                throw new Error('Could not find PO/Purchase orders column in shipments file');
+            }
+            
+            // Track POs by location to handle POs that ship from multiple locations
+            const processedPOsByLocation = {
+                encore: new Set(),
+                unis: new Set()
+            };
+            const allUniquePOs = new Set();
+            let posWithoutASNCount = 0;
+            
+            shipmentsData.forEach(row => {
+                // Check if ASN is empty (handle both "ASN #" and "ASN number")
+                const asnNumber = row['ASN #'] || row['ASN#'] || row['ASN number'] || '';
+                if (!asnNumber || !asnNumber.trim()) {
+                    // Extract POs from this row
+                    const posCell = row[poColumn] || '';
+                    const pos = posCell.split(',').map(po => po.trim()).filter(po => po);
+                    const shipFrom = row['Ship from'] || '';
+                    
+                    pos.forEach(po => {
+                        allUniquePOs.add(po);
+                        
+                        // Determine location
+                        let location = 'encore'; // default
+                        if (shipFrom.toLowerCase().includes('unis')) {
+                            location = 'unis';
+                        } else if (shipFrom.toLowerCase().includes('encore')) {
+                            location = 'encore';
+                        }
+                        
+                        // Process PO for this specific location (allows same PO from different locations)
+                        const locationKey = `${po}-${location}`;
+                        if (!processedPOsByLocation[location].has(po)) {
+                            processedPOsByLocation[location].add(po);
+                            posWithoutASNCount++;
+                            
+                            // Find matching SO in pending file
+                            const match = pendingData.find(pending => 
+                                pending['External ID'] === po || 
+                                pending['PO/Check Number'] === po
+                            );
+                            
+                            if (match && match['Document Number']) {
+                                const soNumber = match['Document Number'];
+                                matchedSONumbers.add(soNumber); // Track matched SO
+                                
+                                const orderData = {
+                                    po: po,
+                                    so: soNumber,
+                                    shipFrom: shipFrom,
+                                    shipTo: row['Ship to'] || ''
+                                };
+                                
+                                // Add to appropriate array
+                                if (location === 'unis') {
+                                    unisOrders.push(orderData);
+                                } else {
+                                    encoreOrders.push(orderData);
+                                }
+                            } else {
+                                // Only add to unmatched if we haven't seen this PO matched elsewhere
+                                const isMatchedElsewhere = [...encoreOrders, ...unisOrders].some(o => o.po === po);
+                                if (!isMatchedElsewhere && !unmatchedPOsList.includes(po)) {
+                                    unmatchedPOsList.push(po);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Create remaining orders list (Amazon/AVC orders not matched, excluding Whole Foods)
+            remainingOrders = pendingData.filter(order => {
+                const orderSource = (order['Order Source'] || '').toLowerCase();
+                return !matchedSONumbers.has(order['Document Number']) && 
+                       (orderSource.includes('amazon') || orderSource.includes('avc')) &&
+                       !orderSource.includes('whole foods');
+            });
+            
+            // Sort remaining orders by date (oldest first)
+            remainingOrders.sort((a, b) => {
+                const dateA = new Date(a['Date'] || a['Sys Create Date/Time'] || '');
+                const dateB = new Date(b['Date'] || b['Sys Create Date/Time'] || '');
+                return dateA - dateB;
+            });
+            
+            // Update statistics
+            document.getElementById('totalPOs').textContent = allUniquePOs.size;
+            document.getElementById('posWithoutASN').textContent = posWithoutASNCount;
+            document.getElementById('matchedSOs').textContent = encoreOrders.length + unisOrders.length;
+            document.getElementById('unmatchedPOs').textContent = unmatchedPOsList.length;
+            
+            // Update badges
+            document.getElementById('encoreBadge').textContent = `${encoreOrders.length} orders`;
+            document.getElementById('unisBadge').textContent = `${unisOrders.length} orders`;
+            document.getElementById('remainingBadge').textContent = `${remainingOrders.length} orders`;
+            
+            // Enable download buttons if there are orders
+            document.getElementById('downloadEncore').disabled = encoreOrders.length === 0;
+            document.getElementById('downloadUnis').disabled = unisOrders.length === 0;
+            document.getElementById('downloadRemaining').disabled = remainingOrders.length === 0;
+        }
+        
+        function showResults() {
+            // Show matched orders table
+            const matchedContainer = document.getElementById('matchedContainer');
+            let matchedHTML = '';
+            
+            if (encoreOrders.length > 0 || unisOrders.length > 0) {
+                matchedHTML = '<table class="data-table"><thead><tr><th>PO Number</th><th>SO Number</th><th>Facility</th><th>Destination</th></tr></thead><tbody>';
+                
+                [...encoreOrders, ...unisOrders].forEach(order => {
+                    const facility = order.shipFrom.includes('Encore') ? 'Encore' : 'UNIS';
+                    const destination = order.shipTo.split(',')[0] || 'N/A';
+                    matchedHTML += `<tr>
+                        <td>${order.po}</td>
+                        <td><strong>${order.so}</strong></td>
+                        <td>${facility}</td>
+                        <td>${destination}</td>
+                    </tr>`;
+                });
+                
+                matchedHTML += '</tbody></table>';
+            } else {
+                matchedHTML = '<p style="color: #64748b; text-align: center; padding: 32px;">No matched orders found.</p>';
+            }
+            
+            matchedContainer.innerHTML = matchedHTML;
+            
+            // Show unmatched POs table
+            const unmatchedContainer = document.getElementById('unmatchedContainer');
+            if (unmatchedPOsList.length > 0) {
+                let unmatchedHTML = '<table class="data-table"><thead><tr><th>PO Number</th><th>Status</th></tr></thead><tbody>';
+                unmatchedPOsList.forEach(po => {
+                    unmatchedHTML += `<tr><td>${po}</td><td style="color: #ef4444;">No matching SO found</td></tr>`;
+                });
+                unmatchedHTML += '</tbody></table>';
+                unmatchedContainer.innerHTML = unmatchedHTML;
+            } else {
+                unmatchedContainer.innerHTML = '<p style="color: #10b981; text-align: center; padding: 32px;">✅ All POs were successfully matched!</p>';
+            }
+            
+            // Show remaining orders table
+            const remainingContainer = document.getElementById('remainingContainer');
+            if (remainingOrders.length > 0) {
+                let remainingHTML = '<div style="margin-bottom: 16px; color: #64748b; font-size: 14px;">Showing first 20 of ' + remainingOrders.length + ' remaining Amazon orders (sorted by date, oldest first)</div>';
+                remainingHTML += '<table class="data-table"><thead><tr><th>Date</th><th>Document Number</th><th>External ID</th><th>Order Source</th><th>Status</th><th>Location</th></tr></thead><tbody>';
+                
+                // Show first 20 remaining orders
+                remainingOrders.slice(0, 20).forEach(order => {
+                    remainingHTML += `<tr>
+                        <td>${order['Date'] || 'N/A'}</td>
+                        <td><strong>${order['Document Number'] || 'N/A'}</strong></td>
+                        <td>${order['External ID'] || 'N/A'}</td>
+                        <td>${order['Order Source'] || 'N/A'}</td>
+                        <td>${order['Status'] || 'N/A'}</td>
+                        <td>${order['Location'] || 'N/A'}</td>
+                    </tr>`;
+                });
+                
+                if (remainingOrders.length > 20) {
+                    remainingHTML += '<tr><td colspan="6" style="text-align: center; color: #94a3b8; font-style: italic;">... and ' + (remainingOrders.length - 20) + ' more orders</td></tr>';
+                }
+                
+                remainingHTML += '</tbody></table>';
+                remainingContainer.innerHTML = remainingHTML;
+            } else {
+                remainingContainer.innerHTML = '<p style="color: #10b981; text-align: center; padding: 32px;">✅ All pending Amazon orders have been matched to shipments!</p>';
+            }
+            
+            document.getElementById('resultsSection').classList.add('show');
+        }
+        
+        function hideResults() {
+            document.getElementById('resultsSection').classList.remove('show');
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+            document.getElementById('processButton').style.display = show ? 'none' : 'flex';
+        }
+        
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            document.getElementById('errorMessage').textContent = message;
+            errorAlert.classList.add('show');
+        }
+        
+        function hideError() {
+            document.getElementById('errorAlert').classList.remove('show');
+        }
+        
+        // Download handlers
+        document.getElementById('downloadEncore').addEventListener('click', function() {
+            downloadTemplate(encoreOrders, 'encore');
+        });
+        
+        document.getElementById('downloadUnis').addEventListener('click', function() {
+            downloadTemplate(unisOrders, 'unis');
+        });
+        
+        document.getElementById('downloadRemaining').addEventListener('click', function() {
+            downloadRemainingOrders();
+        });
+        
+        // Fix button styling
+        document.getElementById('downloadRemaining').classList.add('warning');
+        
+        function downloadTemplate(orders, type) {
+            // Create CSV content
+            let csvContent = 'Order Number,Transaction Type,Weight,Tracking Number\r\n';
+            
+            orders.forEach(order => {
+                csvContent += `${order.so},Sales Order,,\r\n`;
+            });
+            
+            // Create blob and download
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            // Generate filename with current date
+            const today = new Date();
+            const dateStr = `${today.getMonth() + 1}_${today.getDate()}_${today.getFullYear()}`;
+            a.download = `${type}_fulfillment_${dateStr}.csv`;
+            
+            a.href = url;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function downloadRemainingOrders() {
+            // Create CSV content with all original columns
+            if (!pendingHeaders || pendingHeaders.length === 0) {
+                alert('Headers not found. Please reload the files.');
+                return;
+            }
+            
+            // Start with headers
+            let csvContent = pendingHeaders.map(h => `"${h}"`).join(',') + '\r\n';
+            
+            // Add remaining orders data
+            remainingOrders.forEach(order => {
+                const row = pendingHeaders.map(header => {
+                    const value = order[header] || '';
+                    // Escape quotes and wrap in quotes if contains comma or quotes
+                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                        return `"${value.replace(/"/g, '""')}"`;
+                    }
+                    return value;
+                });
+                csvContent += row.join(',') + '\r\n';
+            });
+            
+            // Create blob and download
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            // Generate filename with current date
+            const today = new Date();
+            const dateStr = `${today.getMonth() + 1}_${today.getDate()}_${today.getFullYear()}`;
+            a.download = `remaining_amazon_orders_${dateStr}.csv`;
+            
+            a.href = url;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeDragDrop);
+    </script>
+</body>
+</html>
