@@ -1037,27 +1037,36 @@
                             posWithoutASNCount++;
                             
                             // Find matching SO in pending file
-                            const match = pendingData.find(pending => 
-                                pending['External ID'] === po || 
-                                pending['PO/Check Number'] === po
-                            );
+                            const match = pendingData.find(pending => {
+                                // Check both with and without "Minimum of" prefix
+                                const extId = pending['External ID'] || pending['Minimum of External ID'] || '';
+                                const poCheck = pending['PO/Check Number'] || pending['Minimum of PO/Check Number'] || '';
+                                return extId === po || poCheck === po;
+                            });
                             
-                            if (match && match['Document Number']) {
-                                const soNumber = match['Document Number'];
-                                matchedSONumbers.add(soNumber); // Track matched SO
-                                
-                                const orderData = {
-                                    po: po,
-                                    so: soNumber,
-                                    shipFrom: shipFrom,
-                                    shipTo: row['Ship to'] || ''
-                                };
-                                
-                                // Add to appropriate array
-                                if (location === 'unis') {
-                                    unisOrders.push(orderData);
+                            if (match) {
+                                const soNumber = match['Document Number'] || '';
+                                if (soNumber) {
+                                    matchedSONumbers.add(soNumber); // Track matched SO
+                                    
+                                    const orderData = {
+                                        po: po,
+                                        so: soNumber,
+                                        shipFrom: shipFrom,
+                                        shipTo: row['Ship to'] || ''
+                                    };
+                                    
+                                    // Add to appropriate array
+                                    if (location === 'unis') {
+                                        unisOrders.push(orderData);
+                                    } else {
+                                        encoreOrders.push(orderData);
+                                    }
                                 } else {
-                                    encoreOrders.push(orderData);
+                                    // No document number found
+                                    if (!unmatchedPOsList.includes(po)) {
+                                        unmatchedPOsList.push(po);
+                                    }
                                 }
                             } else {
                                 // Only add to unmatched if we haven't seen this PO matched elsewhere
@@ -1073,16 +1082,17 @@
             
             // Create remaining orders list (Amazon/AVC orders not matched, excluding Whole Foods)
             remainingOrders = pendingData.filter(order => {
-                const orderSource = (order['Order Source'] || '').toLowerCase();
-                return !matchedSONumbers.has(order['Document Number']) && 
+                const orderSource = (order['Order Source'] || order['Minimum of Order Source'] || '').toLowerCase();
+                const docNumber = order['Document Number'] || '';
+                return !matchedSONumbers.has(docNumber) && 
                        (orderSource.includes('amazon') || orderSource.includes('avc')) &&
                        !orderSource.includes('whole foods');
             });
             
             // Sort remaining orders by date (oldest first)
             remainingOrders.sort((a, b) => {
-                const dateA = new Date(a['Date'] || a['Sys Create Date/Time'] || '');
-                const dateB = new Date(b['Date'] || b['Sys Create Date/Time'] || '');
+                const dateA = new Date(a['Date'] || a['Minimum of Date'] || a['Sys Create Date/Time'] || a['Minimum of Sys Create Date/Time'] || '');
+                const dateB = new Date(b['Date'] || b['Minimum of Date'] || b['Sys Create Date/Time'] || b['Minimum of Sys Create Date/Time'] || '');
                 return dateA - dateB;
             });
             
@@ -1150,13 +1160,20 @@
                 
                 // Show first 20 remaining orders
                 remainingOrders.slice(0, 20).forEach(order => {
+                    const date = order['Date'] || order['Minimum of Date'] || 'N/A';
+                    const docNum = order['Document Number'] || 'N/A';
+                    const extId = order['External ID'] || order['Minimum of External ID'] || 'N/A';
+                    const status = order['Status'] || order['Minimum of Status'] || 'N/A';
+                    const location = order['Location'] || order['Minimum of Location'] || 'N/A';
+                    const orderSource = order['Order Source'] || order['Minimum of Order Source'] || 'N/A';
+                    
                     remainingHTML += `<tr>
-                        <td>${order['Date'] || 'N/A'}</td>
-                        <td><strong>${order['Document Number'] || 'N/A'}</strong></td>
-                        <td>${order['External ID'] || 'N/A'}</td>
-                        <td>${order['Order Source'] || 'N/A'}</td>
-                        <td>${order['Status'] || 'N/A'}</td>
-                        <td>${order['Location'] || 'N/A'}</td>
+                        <td>${date}</td>
+                        <td><strong>${docNum}</strong></td>
+                        <td>${extId}</td>
+                        <td>${orderSource}</td>
+                        <td>${status}</td>
+                        <td>${location}</td>
                     </tr>`;
                 });
                 
